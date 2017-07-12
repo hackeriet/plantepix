@@ -1,8 +1,4 @@
 #!/bin/bash
-#
-# Upload file to public.42.fm and output public url
-# stigok, july 17
-#
 
 log () {
   logger -t "$(basename $0)" "${@}"
