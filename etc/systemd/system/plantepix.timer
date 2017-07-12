@@ -1,0 +1,9 @@
+[Unit]
+Description=Capture plantepix every 10 mins
+
+[Timer]
+OnUnitActiveSec=10m
+OnBootSec=1m
+
+[Install]
+WantedBy=timers.target

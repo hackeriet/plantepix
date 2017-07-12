@@ -1,0 +1,23 @@
+[Unit]
+Description=Take screenshots of plants
+# If this unit starts more often than 3 times within 120s
+# it is _probably_ an error with reading /dev/video0.
+# Just reboot when that happens until a better solution has
+# been found.
+StartLimitBurst=3
+StartLimitIntervalSec=120s
+StartLimitAction=reboot-force
+After=network.target
+
+[Service]
+User=alarm
+Group=alarm
+Type=oneshot
+Environment="TARGET_DIR=plantepix" "SSH_HOST=blade.hackeriet.no"
+# Working directory should be a tmpfs mount on a Raspberry Pi
+# to save the SD card for writes
+WorkingDirectory=/home/alarm/tmp
+ExecStart=/home/alarm/bin/plantepix-pipeline
+
+[Install]
+WantedBy=multi-user.target

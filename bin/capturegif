@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+#set -x
+
+input=/dev/video0
+duration=10
+fps=2
+name=movie
+vformat=avi
+gc_wait=3 # Wait for gamma correction
+scale_width=640
+logging='-loglevel fatal'
+timestamp=`date +'%s'`
+text="https\://plantepix.hackeriet.no // #oslohackerspace // ${timestamp}"
+
+palette_name="${name}-palette.png"
+
+# Capture video
+ffmpeg $logging -y -ss $gc_wait -i $name.$vformat \
+	-vf drawtext="boxcolor=black:boxborderw=5:box=1:text='${text}':fontfile=/usr/share/fonts/TTF/Hack-Bold.ttf:fontsize=14:fontcolor=white:x=(w-text_w)/2:y=h-20" \
+	$name-gc.$vformat
+
+video="$name-gc.$vformat"
+
+# Make palette for GIF
+ffmpeg $logging -y -i $video -vf "fps=${fps},scale=${scale_width}:-1:flags=lanczos,palettegen" $palette_name
+
+# Make animated GIF
+ffmpeg $logging -y -i $video -i $palette_name -filter_complex "fps=${fps},scale=${scale_width}:-1:flags=lanczos[x];[x][1:v]paletteuse" $name.gif
+
+echo $(pwd)/$name.gif

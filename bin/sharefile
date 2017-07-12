@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# Upload file to public.42.fm and output public url
+# stigok, july 17
+#
+
+log () {
+  logger -t "$(basename $0)" "${@}"
+}
+
+timestamp=`date +%s`
+target_folder=${TARGET_DIR:-plantepix}
+target="$target_folder/$timestamp.gif"
+host=${SSH_HOST:-''}
+public_address="https://hackeriet.no/"
+
+test -z "$1" && logger "Missing filename" && exit 1
+
+# Upload file
+scp -q "${1}" $host:${target}
+return_code=$?
+
+if [ $return_code -ne 0 ]; then
+  log -p error "Failed to upload file (scp exited with $return_code)"
+  exit 2
+fi
+
+log -p info "Uploaded file to ${public_address}${target}" 2> /dev/null
+echo "${public_address}${target}"
+
