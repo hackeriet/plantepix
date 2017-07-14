@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+set -x
+
+input=/dev/video0
+duration=10
+fps=4
+gif_fps=12
+name=movie
+vformat=avi
+gc_wait=3 # Wait for gamma correction
+scale_width=640
+res="${scale_width}x480"
+#logging='-loglevel fatal'
+timestamp=`date +'%s'`
+text="https\://plantepix.hackeriet.no // #oslohackerspace // ${timestamp}"
+
+palette_name="${name}-palette.png"
+
+video="${name}-gc.${vformat}"
+
+# Capture video
+ffmpeg $logging -y -i $input -ss $gc_wait -t $duration -r $fps \
+        -vf drawtext="boxcolor=black:boxborderw=5:box=1:text='${text}':fontfile=/usr/share/fonts/TTF/Hack-Bold.ttf:fontsize=14:fontcolor=white:x=(w-text_w)/2:y=h-20" \
+        $video
+
+# Create indiviudal pictures for the gif
+ffmpeg $logging -y -i $video -r $fps -s $res -f image2 $name-%03d.png
+
+# Make movie from images to be able to "fast-forward" fps of GIF
+ffmpeg $logging -y -f image2 -pattern_type glob -framerate $gif_fps -i "$name-*.png" -s $res ${name}-fast-forward.avi
+
+# Make palette for GIF
+ffmpeg $logging -y -i ${name}-fast-forward.avi -vf "scale=${scale_width}:-1:flags=lanczos,palettegen" $palette_name
+
+# Make animated GIF
+ffmpeg $logging -y -i ${name}-fast-forward.avi -i $palette_name -filter_complex "scale=${scale_width}:-1:flags=lanczos[x];[x][1:v]paletteuse" $name.gif
+
+# Clean up
+rm ./*.png
+
+echo $(pwd)/$name.gif
