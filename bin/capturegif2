@@ -5,11 +5,11 @@ set -x
 
 input=/dev/video0
 duration=10
-fps=4
+fps=2
 gif_fps=12
 name=movie
 vformat=avi
-gc_wait=3 # Wait for gamma correction
+#gc_wait=3 # Wait for gamma correction
 scale_width=640
 res="${scale_width}x480"
 #logging='-loglevel fatal'
@@ -21,9 +21,9 @@ palette_name="${name}-palette.png"
 video="${name}-gc.${vformat}"
 
 # Capture video
-ffmpeg $logging -y -i $input -ss $gc_wait -t $duration -r $fps \
-        -vf drawtext="boxcolor=black:boxborderw=5:box=1:text='${text}':fontfile=/usr/share/fonts/TTF/Hack-Bold.ttf:fontsize=14:fontcolor=white:x=(w-text_w)/2:y=h-20" \
-        $video
+ffmpeg $logging -y -s 720x480 -i $input -t $duration -r $fps \
+	-vf drawtext="boxcolor=black:boxborderw=5:box=1:text='${text}':fontfile=/usr/share/fonts/TTF/Hack-Bold.ttf:fontsize=14:fontcolor=white:x=(w-text_w)/2:y=h-20" \
+	$video
 
 # Create indiviudal pictures for the gif
 ffmpeg $logging -y -i $video -r $fps -s $res -f image2 $name-%03d.png
